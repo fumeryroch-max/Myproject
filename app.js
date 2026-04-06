@@ -90,21 +90,21 @@ const RARITY={
 const ALL_ITEMS=[
   {id:'hat_flower',cat:'hat', icon:'🌸',name:'Couronne florale',rarity:'common',   unlockCond:'streak_3'},
   {id:'hat_cap',   cat:'hat', icon:'🧢',name:'Casquette',       rarity:'common',   unlockCond:'level_2'},
-  {id:'hat_wizard',cat:'hat', icon:'🪄',name:'Chapeau de mage', rarity:'rare',     unlockCond:'level_5'},
-  {id:'hat_crown', cat:'hat', icon:'👑',name:'Couronne royale', rarity:'epic',     unlockCond:'level_10'},
+  {id:'hat_wizard',cat:'hat', icon:'🪄',name:'Chapeau de mage', rarity:'rare',     unlockCond:'level_5',premium:true,priceCents:399},
+  {id:'hat_crown', cat:'hat', icon:'👑',name:'Couronne royale', rarity:'epic',     unlockCond:'level_10',premium:true,priceCents:799},
   {id:'hat_halo',  cat:'hat', icon:'😇',name:'Auréole sacrée',  rarity:'legendary',unlockCond:'streak_30'},
   {id:'aura_fire', cat:'aura',icon:'🔥',name:'Aura de feu',     rarity:'uncommon', unlockCond:'streak_7'},
   {id:'aura_ice',  cat:'aura',icon:'❄️',name:'Aura glaciale',   rarity:'rare',     unlockCond:'correct_50'},
-  {id:'aura_cosmic',cat:'aura',icon:'🌌',name:'Aura cosmique',  rarity:'epic',     unlockCond:'level_8'},
-  {id:'aura_divine',cat:'aura',icon:'✨',name:'Aura divine',    rarity:'legendary',unlockCond:'correct_500'},
+  {id:'aura_cosmic',cat:'aura',icon:'🌌',name:'Aura cosmique',  rarity:'epic',     unlockCond:'level_8',premium:true,priceCents:599},
+  {id:'aura_divine',cat:'aura',icon:'✨',name:'Aura divine',    rarity:'legendary',unlockCond:'correct_500',premium:true,priceCents:999},
   {id:'acc_glasses',cat:'acc',icon:'🕶️',name:'Lunettes cool',   rarity:'common',   unlockCond:'level_2'},
   {id:'acc_bow',   cat:'acc', icon:'🎀',name:'Nœud papillon',   rarity:'uncommon', unlockCond:'streak_5'},
   {id:'acc_star',  cat:'acc', icon:'⭐',name:'Étoile magique',  rarity:'rare',     unlockCond:'correct_100'},
-  {id:'acc_gem',   cat:'acc', icon:'💎',name:'Gemme de sagesse',rarity:'epic',     unlockCond:'level_12'},
+  {id:'acc_gem',   cat:'acc', icon:'💎',name:'Gemme de sagesse',rarity:'epic',     unlockCond:'level_12',premium:true,priceCents:499},
   {id:'acc_inf',   cat:'acc', icon:'♾️',name:'Anneau infini',   rarity:'legendary',unlockCond:'streak_60'},
   {id:'comp_star', cat:'comp',icon:'🌟',name:'Étoile filante',  rarity:'uncommon', unlockCond:'level_3'},
   {id:'comp_ghost',cat:'comp',icon:'👻',name:'Fantôme studieux',rarity:'rare',     unlockCond:'correct_75'},
-  {id:'comp_dragon',cat:'comp',icon:'🐉',name:'Mini dragon',    rarity:'legendary',unlockCond:'streak_45'},
+  {id:'comp_dragon',cat:'comp',icon:'🐉',name:'Mini dragon',    rarity:'legendary',unlockCond:'streak_45',premium:true,priceCents:1199},
 ];
 
 // Leagues
@@ -297,6 +297,8 @@ const DS=()=>({
   hunger:80,mood:70,energy:85,streak:0,
   lastSeen:Date.now(),totalCorrect:0,sesAns:0,
   inventory:['hat_flower','acc_glasses'],
+  paidItems:[],
+  revenueCents:0,
   equipped:{hat:null,aura:null,acc:null,comp:null},
   pendingDrop:null,
   chat:[],chatInput:'',showHistory:false,
@@ -676,7 +678,15 @@ function action_feed(){if(S.hunger>=100){toast('Je n\'ai plus faim 😌');return
 function action_play(){if(S.energy<20){toast(`${S.name} est épuisé·e 😴`);return;}S.mood=clamp(S.mood+20);S.energy=clamp(S.energy-15);gainXP(8);save();toast('Trop fun ! 🎮 +8 XP');updateCreatureBar();if(CUR_PAGE==='home')renderPage('home');}
 function action_rest(){S.energy=clamp(S.energy+30);S.mood=clamp(S.mood+5);gainXP(3);save();toast(`${S.name} se repose 💤 +3 XP`);updateCreatureBar();if(CUR_PAGE==='home')renderPage('home');}
 
-function equip(id){const it=ALL_ITEMS.find(i=>i.id===id);if(!it||!S.inventory.includes(id))return;S.equipped[it.cat]=S.equipped[it.cat]===id?null:id;save();if(CUR_PAGE==='persona')renderPage('persona');updateCreatureBar();}
+function equip(id){
+  const it=ALL_ITEMS.find(i=>i.id===id);
+  if(!it||!S.inventory.includes(id))return;
+  if(it.premium&&!isPremiumOwned(it)){toast('Item premium non acheté');return;}
+  S.equipped[it.cat]=S.equipped[it.cat]===id?null:id;
+  save();
+  if(CUR_PAGE==='persona')renderPage('persona');
+  updateCreatureBar();
+}
 
 const DROP_EVERY=5;
 function tryDrop(){
@@ -703,6 +713,19 @@ function showDropModal(){
   </div>`;
 }
 function unlockLabel(it){const[t,v]=it.unlockCond.split('_');return t==='level'?`Niv.${v}`:t==='streak'?`${v}j`:t==='correct'?`${v}✓`:'?';}
+function isPremiumOwned(it){return !it.premium||S.paidItems.includes(it.id);}
+function priceLabel(cents){return `${(cents/100).toFixed(2).replace('.',',')} €`;}
+function buyPremiumItem(id){
+  const it=ALL_ITEMS.find(x=>x.id===id);
+  if(!it||!it.premium)return;
+  if(S.paidItems.includes(id)){toast('Déjà acheté');return;}
+  S.paidItems.push(id);
+  if(!S.inventory.includes(id))S.inventory.push(id);
+  S.revenueCents+=(it.priceCents||0);
+  save();
+  if(CUR_PAGE==='persona')renderPage('persona');
+  toast(`✅ Achat réussi: ${it.name}`);
+}
 
 setInterval(()=>{
   if(!S.hatched)return;
@@ -1452,13 +1475,15 @@ function renderPersona(){
     wd+=`<div class="s-header">${cat.l}</div><div class="wd-grid" style="margin-bottom:4px;">`;
     for(const it of ALL_ITEMS.filter(i=>i.cat===cat.k)){
       const owned=S.inventory.includes(it.id),eq=S.equipped[it.cat]===it.id,rar=RARITY[it.rarity];
+      const lockedPremium=it.premium&&!isPremiumOwned(it);
       wd+=`<div class="wd-item ${eq?'eq':''} ${!owned?'lk':''}" ${owned?`onclick="equip('${it.id}')"`:''}
         style="${eq?'box-shadow:0 0 10px rgba(124,92,252,.25);':''}">
         ${eq?'<div class="wd-eq">✓</div>':''}
         <div class="wd-icon">${it.icon}</div>
         <div class="wd-name">${it.name}</div>
         <span class="pill ${rar.cls}" style="font-size:9px;padding:1px 7px;">${rar.l}</span>
-        ${!owned?`<div class="wd-lock"><span style="font-size:16px;">🔒</span>${unlockLabel(it)}</div>`:''}
+        ${it.premium?`<div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:3px;">💳 ${priceLabel(it.priceCents||0)}</div>`:''}
+        ${!owned?`<div class="wd-lock"><span style="font-size:16px;">🔒</span>${lockedPremium?`Premium`:unlockLabel(it)}</div>`:''}
       </div>`;
     }
     wd+=`</div>`;
@@ -1477,6 +1502,16 @@ function renderPersona(){
   </div>
   <div class="stats-grid">
     ${[['✦','Niveau',S.level],['🔥','Streak',S.streak+'j'],['🧠','Correctes',S.totalCorrect],['⚔️','Défis',S.doneCh.length],['🎒','Items',S.inventory.length],['💬','Messages',S.chat.length]].map(([ic,l,v])=>`<div class="stat-cell"><div class="sc-val">${ic} ${v}</div><div class="sc-lbl">${l}</div></div>`).join('')}
+  </div>
+  <div class="s-header">💸 Boutique Premium</div>
+  <div class="card" style="margin:0 16px 10px;">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Revenu simulé total: <strong style="color:var(--gold);">${priceLabel(S.revenueCents||0)}</strong></div>
+    ${(ALL_ITEMS.filter(it=>it.premium&&!S.paidItems.includes(it.id)).slice(0,5).map(it=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;">${it.icon} ${it.name} <span style="color:var(--gold);font-weight:700;">${priceLabel(it.priceCents||0)}</span></div>
+        <button class="btn-ghost" style="width:auto;padding:7px 10px;" onclick="buyPremiumItem('${it.id}')">Acheter</button>
+      </div>
+    `).join(''))||'<div style="font-size:12px;color:var(--text2);">Tous les items premium de base sont achetés 🎉</div>'}
   </div>
   <div class="s-header">🧠 Mémoire compagnon</div>
   <div class="card" style="margin:0 16px 10px;font-size:12px;color:var(--text2);line-height:1.6;">

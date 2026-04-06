@@ -56,6 +56,13 @@ Le code contient le compte local et la progression, pour un transfert peer-to-pe
 Mode expérimental: synchronisation de ligue entre appareils connectés via **WebRTC + échange manuel de codes** (pas de backend central).
 Dans Paramètres > Synchronisation multi-appareil > "Ligue Internet P2P (WebRTC)".
 
+## Monétisation (boutique premium)
+
+Une boutique premium locale est disponible dans le profil:
+- items premium avec prix en euros
+- achat simulé (local) pour tester le funnel
+- compteur de revenu simulé (`revenueCents`)
+
 ## Rôle central du modèle IA
 
 Le modèle IA pilote maintenant plusieurs dimensions du compagnon:
