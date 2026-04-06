@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Companion IA Local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="ld-egg">🥚</div>
+  <div class="ld-title">Companion</div>
+  <div class="ld-sub">Ton compagnon se réveille...</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+</div>
+
+<!-- LOCAL AUTH -->
+<div id="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-title">🔐 Companion local</div>
+    <div class="auth-sub">Compte local uniquement (sur cet appareil)</div>
+    <div class="auth-tabs">
+      <button id="tab-login" class="auth-tab active" onclick="setAuthMode('login')">Connexion</button>
+      <button id="tab-register" class="auth-tab" onclick="setAuthMode('register')">Créer un compte</button>
+    </div>
+    <div class="auth-form">
+      <input id="auth-email" class="settings-inp" type="email" placeholder="Email local"/>
+      <input id="auth-username" class="settings-inp" type="text" placeholder="Pseudo (création uniquement)" style="display:none;"/>
+      <input id="auth-password" class="settings-inp" type="password" placeholder="Mot de passe"/>
+      <button class="btn-primary" onclick="submitAuth()" id="auth-submit">Se connecter</button>
+    </div>
+    <div class="auth-note">Aucune donnée n’est envoyée à un serveur distant.</div>
+  </div>
+</div>
+
+<!-- ONBOARDING (hidden after first launch) -->
+<div id="onboarding" style="display:none;">
+  <div class="ob-egg">🥚</div>
+  <div class="ob-title">Ton compagnon<br>t'attend</div>
+  <div class="ob-sub">Choisis jusqu'à 3 domaines. Sa personnalité évoluera avec toi chaque semaine. Prêt pour brancher ton modèle local &lt;1B ?</div>
+  <div class="domain-grid" id="ob-grid"></div>
+  <div style="font-size:12px;color:var(--text3);" id="ob-count">0/3 sélectionné</div>
+  <button class="btn-primary" id="ob-hatch-btn" disabled onclick="hatch()" style="max-width:320px;">🥚 Faire éclore mon compagnon</button>
+</div>
+
+<!-- HATCH ANIMATION -->
+<div id="hatch-overlay" style="display:none;" class="hatch-overlay">
+  <div style="font-size:11px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;">✦ Naissance ✦</div>
+  <div class="hatch-egg">🥚</div>
+  <div style="font-size:14px;color:var(--text2);">Quelque chose s'éveille...</div>
+</div>
+
+<!-- APP SHELL -->
+<div id="shell" style="display:none;">
+
+  <!-- Persistent creature bar -->
+  <div id="creature-bar">
+    <div class="cb-svg" id="cb-svg" onclick="goTo('home')"></div>
+    <div class="cb-info">
+      <div class="cb-name" id="cb-name"></div>
+      <div class="cb-status" id="cb-status"></div>
+    </div>
+    <div class="cb-xp-wrap">
+      <div class="cb-xp-row"><span>XP</span><span id="cb-xp-lbl"></span></div>
+      <div class="cb-xp-track"><div class="cb-xp-fill" id="cb-xp-fill"></div></div>
+    </div>
+    <button class="cb-settings" onclick="openSettings()" title="Paramètres">⚙</button>
+  </div>
+
+  <!-- Page viewport -->
+  <div id="viewport">
+    <div class="page" id="page-home"></div>
+    <div class="page" id="page-chat" style="display:flex;flex-direction:column;"></div>
+    <div class="page" id="page-study"></div>
+    <div class="page" id="page-ch"></div>
+    <div class="page" id="page-lb"></div>
+    <div class="page" id="page-persona"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav id="bottom-nav">
+    <button class="nav-btn" data-page="home"    onclick="goTo('home')"   ><span class="ni">🏠</span>Accueil</button>
+    <button class="nav-btn" data-page="chat"    onclick="goTo('chat')"   ><span class="ni">💬</span>Chat</button>
+    <button class="nav-btn" data-page="study"   onclick="goTo('study')"  ><span class="ni">🧠</span>Étudier</button>
+    <button class="nav-btn" data-page="ch"      onclick="goTo('ch')"     ><span class="ni">⚔️</span>Défis</button>
+    <button class="nav-btn" data-page="lb"      onclick="goTo('lb')"     ><span class="ni">🏆</span>Ligue</button>
+    <button class="nav-btn" data-page="persona" onclick="goTo('persona')"><span class="ni">👤</span>Profil</button>
+  </nav>
+</div>
+
+<!-- Modal root -->
+<div id="modal-root"></div>
+<div id="toast" class="off"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
